@@ -1,15 +1,13 @@
 use anchor_lang::prelude::*;
 
 use crate::state::*;
+use crate::error::*;
 
-pub fn handler(
-    ctx: Context<SetStage>,
-    stage: u8,
-    token_amount: u64,
-    token_price: u64
-) -> Result<()> {
+pub fn handler(ctx: Context<SetStage>, stage_iterator: u64) -> Result<()> {
     let presale = &mut ctx.accounts.presale;
-    presale.stages[stage as usize] = Stage { token_amount, token_price };
+    require!(stage_iterator < (presale.stages.len() as u64), ErrorCodes::InvalidStageIterator);
+    presale.stage_iterator = stage_iterator;
+
     Ok(())
 }
 

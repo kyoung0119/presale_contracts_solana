@@ -36,23 +36,23 @@ let admin = getProvider().wallet;
 const program = workspace.PresaleContractsSolana as Program<PresaleContractsSolana>;
 
 describe("presale-contracts-solana", () => {
-  let treasury;
-  let deployer1;
-  let deployer2;
-  let user1;
-  let user2;
-  const deploy_fee = new BN(0.8 * LAMPORTS_PER_SOL); // Fixed SOL in lamports
-  const performance_fee = new BN(0.05 * LAMPORTS_PER_SOL); // Fixed SOL in lamports
+  const presale = Keypair.generate();
 
   before(async () => {
 
   });
 
   it('Initializes the presale', async () => {
-    const presale = Keypair.generate();
+    const stages = [
+      { tokenAmount: new BN(2000000), tokenPrice: new BN(2500000) },
+      // Add more stages as necessary
+    ];
 
     const tx = await program.methods
-      .initialize()
+      .initialize(
+        admin.publicKey,
+        stages
+      )
       .accounts({
         presale: presale.publicKey,
         authority: provider.wallet.publicKey,
@@ -66,23 +66,9 @@ describe("presale-contracts-solana", () => {
   });
 
   it('Sets a stage', async () => {
-    const presale = Keypair.generate();
-
-    await program.methods
-      .initialize()
-      .accounts({
-        presale: presale.publicKey,
-        authority: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([presale])
-      .rpc();
-
     await program.methods
       .setStage(
-        0,
-        new BN(1000),
-        new BN(500)
+        new BN(1)
       )
       .accounts({
         presale: presale.publicKey,
@@ -91,8 +77,7 @@ describe("presale-contracts-solana", () => {
       .rpc();
 
     const account = await program.account.presale.fetch(presale.publicKey);
-    console.log('Stage 0 Token Amount: ', account.stages[0].tokenAmount.toString());
-    console.log('Stage 0 Token Price: ', account.stages[0].tokenPrice.toString());
+    console.log('Stage Iterator:', account.stageIterator.toString());
   });
 
 });
