@@ -36,18 +36,42 @@ let admin = getProvider().wallet;
 const program = workspace.PresaleContractsSolana as Program<PresaleContractsSolana>;
 
 describe("presale-contracts-solana", () => {
+  const ONE_USDT = 1000000
+
   const presale_info = Keypair.generate();
 
+  let protocol_wallet;
   let user1;
+  let usdcMint, usdtMint;
+  let usdcTokenAccount, usdtTokenAccount;
+
 
   before(async () => {
-    user1 = await createRandomWalletAndAirdrop(provider, 2)
+    protocol_wallet = await createRandomWalletAndAirdrop(provider, 2);
+    user1 = await createRandomWalletAndAirdrop(provider, 2);
+
+    // Create random SPL token mints for testing with 6 decimals
+    usdcMint = await createRandomMint(provider, 6);
+    usdtMint = await createRandomMint(provider, 6);
+
+    // Create associated token accounts for the admin
+    usdcTokenAccount = await getOrCreateAssociatedTokenAccount(provider.connection, admin.payer, usdcMint, protocol_wallet.publicKey);
+    usdtTokenAccount = await getOrCreateAssociatedTokenAccount(provider.connection, admin.payer, usdtMint, protocol_wallet.publicKey);
   });
 
   it('Initializes the presale', async () => {
     const stages = [
       { tokenAmount: new BN(2000000), tokenPrice: new BN(2500000) },
-      // Add more stages as necessary
+      { tokenAmount: new BN(3000000), tokenPrice: new BN(2500000) },
+      { tokenAmount: new BN(4000000), tokenPrice: new BN(6250000) },
+      { tokenAmount: new BN(5000000), tokenPrice: new BN(27500000) },
+      { tokenAmount: new BN(5500000), tokenPrice: new BN(37500000) },
+      { tokenAmount: new BN(6000000), tokenPrice: new BN(41250000) },
+      { tokenAmount: new BN(6500000), tokenPrice: new BN(37500000) },
+      { tokenAmount: new BN(7000000), tokenPrice: new BN(35000000) },
+      { tokenAmount: new BN(8000000), tokenPrice: new BN(7500000) },
+      { tokenAmount: new BN(9000000), tokenPrice: new BN(2500000) },
+      { tokenAmount: new BN(0), tokenPrice: new BN(0) },
     ];
 
     const protocol_wallet = admin.publicKey
@@ -55,7 +79,9 @@ describe("presale-contracts-solana", () => {
     await program.methods
       .initialize(
         protocol_wallet,
-        stages
+        stages,
+        usdcMint,
+        usdtMint
       )
       .accounts({
         presaleInfo: presale_info.publicKey,
@@ -144,36 +170,25 @@ describe("presale-contracts-solana", () => {
     assert.equal(account.totalTokensSold.toString(), amount.toString(), "Total tokens sold should be updated");
   });
 
-  // it("Method: depositUSDT", async function () {
-  //   // Mint USDT token
-  //   const usdtMint = await createRandomMint(provider, admin.publicKey);
-  //   const usdtTokenAccount = await getOrCreateAssociatedTokenAccount(provider.connection, admin, usdtMint, admin.publicKey);
-  //   await mintTo(provider.connection, admin, usdtMint, usdtTokenAccount.address, admin, ONE_USDT * 2, [admin]);
+  it("Method: depositUSDT", async function () {
+    // Mint USDT token
+    const usdtTokenAccount = await getOrCreateAssociatedTokenAccount(provider.connection, admin, usdtMint, admin.publicKey);
+    await mintTo(provider.connection, admin, usdtMint, usdtTokenAccount.address, admin, ONE_USDT * 2);
 
-  //   // Approve tokens for the presale
-  //   await program.methods
-  //     .approve(usdtTokenAccount.address, ONE_USDT * 2)
-  //     .accounts({
-  //       presale: presale.publicKey,
-  //       authority: provider.wallet.publicKey,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //     })
-  //     .rpc();
+    // Deposit USDT to the presale
+    await program.methods
+      .depositUsdt(new BN(ONE_USDT * 2), admin.publicKey)
+      .accounts({
+        presale: presale.publicKey,
+        authority: provider.wallet.publicKey,
+        tokenAccount: usdtTokenAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
 
-  //   // Deposit USDT to the presale
-  //   await program.methods
-  //     .depositUsdt(new BN(ONE_USDT * 2), new PublicKey(constants.ZERO_ADDRESS))
-  //     .accounts({
-  //       presale: presale.publicKey,
-  //       authority: provider.wallet.publicKey,
-  //       tokenAccount: usdtTokenAccount.address,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //     })
-  //     .rpc();
-
-  //   const account = await program.account.presale.fetch(presale.publicKey);
-  //   assert.equal(account.balances[admin.publicKey.toString()], 100, "Balance should be updated");
-  // });
+    const account = await program.account.presale.fetch(presale.publicKey);
+    assert.equal(account.balances[admin.publicKey.toString()], 100, "Balance should be updated");
+  });
 
   // it("Method: depositUSDTTo", async function () {
   //   // Mint USDT token

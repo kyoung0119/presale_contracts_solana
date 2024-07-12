@@ -1,49 +1,149 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{ self, TokenAccount, Transfer };
+use anchor_spl::token::{ self, TokenAccount };
 
 use crate::state::*;
-use crate::error::*;
-
-pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-    let presale_info = &mut ctx.accounts.presale_info;
-    // Extract stage iterator first to avoid multiple mutable borrows
-    let stage_iterator = presale_info.stage_iterator as usize;
-
-    // Ensure we have enough tokens in the current stage
-    require!(
-        presale_info.stages[stage_iterator].token_amount >= amount,
-        ErrorCodes::InsufficientStageTokens
-    );
-
-    // Transfer tokens to protocol wallet
-    let cpi_accounts = Transfer {
-        from: ctx.accounts.token_account.to_account_info(),
-        to: ctx.accounts.token_account.to_account_info(), // Replace with actual protocol wallet account
-        authority: ctx.accounts.payer.to_account_info(),
-    };
-    let cpi_program = ctx.accounts.token_program.to_account_info();
-    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    token::transfer(cpi_ctx, amount)?;
-
-    // Update stage and presale details in a separate mutable borrow scope
-    {
-        let stage = &mut presale_info.stages[stage_iterator];
-        stage.token_amount -= amount;
-    }
-
-    presale_info.total_tokens_sold += amount;
-    presale_info.total_sold_in_usd += presale_info.stages[stage_iterator].token_price * amount; // Assume USD price is token price for simplicity
-
-    Ok(())
-}
+use crate::utils::{ deposit_checks_and_effects, transfer_tokens, update_presale_state };
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
+    #[account(mut, has_one = authority)]
+    pub presale: Account<'info, PresaleInfo>,
+    pub authority: Signer<'info>,
     #[account(mut)]
-    pub presale_info: Account<'info, PresaleInfo>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    #[account(mut, constraint = token_account.owner == payer.key())]
     pub token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub protocol_wallet: Account<'info, TokenAccount>,
     pub token_program: Program<'info, token::Token>,
+}
+
+#[derive(Accounts)]
+pub struct DepositTo<'info> {
+    #[account(mut, has_one = authority)]
+    pub presale: Account<'info, PresaleInfo>,
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub protocol_wallet: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub to: Signer<'info>,
+    pub token_program: Program<'info, token::Token>,
+}
+
+pub fn deposit_usdt(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        true,
+        *ctx.accounts.token_program.key
+    )?;
+
+    transfer_tokens(
+        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.protocol_wallet.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        amount
+    )?;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.authority.key());
+    Ok(())
+}
+
+pub fn deposit_usdt_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        true,
+        *ctx.accounts.token_program.key
+    )?;
+
+    transfer_tokens(
+        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.protocol_wallet.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        amount
+    )?;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
+    Ok(())
+}
+
+pub fn deposit_usdc(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        true,
+        *ctx.accounts.token_program.key
+    )?;
+
+    transfer_tokens(
+        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.protocol_wallet.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        amount
+    )?;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.authority.key());
+    Ok(())
+}
+
+pub fn deposit_usdc_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        true,
+        *ctx.accounts.token_program.key
+    )?;
+
+    transfer_tokens(
+        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.protocol_wallet.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        amount
+    )?;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
+    Ok(())
+}
+
+pub fn deposit_coin(ctx: Context<Deposit>, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let amount = ctx.accounts.token_account.amount;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        false,
+        *ctx.accounts.token_program.key
+    )?;
+
+    **ctx.accounts.authority.try_borrow_mut_lamports()? -= amount;
+    // **ctx.accounts.protocol_wallet.try_borrow_mut_lamports()? += expected_amount;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.authority.key());
+    Ok(())
+}
+
+pub fn deposit_coin_to(ctx: Context<DepositTo>, referrer: Pubkey) -> Result<()> {
+    let presale = &mut ctx.accounts.presale;
+    let amount = ctx.accounts.token_account.amount;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(
+        presale,
+        amount,
+        false,
+        *ctx.accounts.token_program.key
+    )?;
+
+    **ctx.accounts.authority.try_borrow_mut_lamports()? -= amount;
+    // **ctx.accounts.protocol_wallet.try_borrow_mut_lamports()? += expected_amount;
+
+    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
+    Ok(())
 }
