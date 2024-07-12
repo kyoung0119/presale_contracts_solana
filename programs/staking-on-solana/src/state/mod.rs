@@ -1,7 +1,7 @@
 pub mod constants;
-pub mod presale;
+pub mod presale_info;
 pub mod stage;
 
 pub use constants::*;
-pub use presale::*;
+pub use presale_info::*;
 pub use stage::*;

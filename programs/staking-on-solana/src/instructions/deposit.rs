@@ -5,13 +5,13 @@ use crate::state::*;
 use crate::error::*;
 
 pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-    let presale = &mut ctx.accounts.presale;
+    let presale_info = &mut ctx.accounts.presale_info;
     // Extract stage iterator first to avoid multiple mutable borrows
-    let stage_iterator = presale.stage_iterator as usize;
+    let stage_iterator = presale_info.stage_iterator as usize;
 
     // Ensure we have enough tokens in the current stage
     require!(
-        presale.stages[stage_iterator].token_amount >= amount,
+        presale_info.stages[stage_iterator].token_amount >= amount,
         ErrorCodes::InsufficientStageTokens
     );
 
@@ -27,12 +27,12 @@ pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 
     // Update stage and presale details in a separate mutable borrow scope
     {
-        let stage = &mut presale.stages[stage_iterator];
+        let stage = &mut presale_info.stages[stage_iterator];
         stage.token_amount -= amount;
     }
 
-    presale.total_tokens_sold += amount;
-    presale.total_sold_in_usd += presale.stages[stage_iterator].token_price * amount; // Assume USD price is token price for simplicity
+    presale_info.total_tokens_sold += amount;
+    presale_info.total_sold_in_usd += presale_info.stages[stage_iterator].token_price * amount; // Assume USD price is token price for simplicity
 
     Ok(())
 }
@@ -40,7 +40,7 @@ pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 #[derive(Accounts)]
 pub struct Deposit<'info> {
     #[account(mut)]
-    pub presale: Account<'info, Presale>,
+    pub presale_info: Account<'info, PresaleInfo>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(mut, constraint = token_account.owner == payer.key())]

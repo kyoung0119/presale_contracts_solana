@@ -4,9 +4,9 @@ use crate::state::*;
 use crate::error::*;
 
 pub fn handler(ctx: Context<SetStage>, stage_iterator: u64) -> Result<()> {
-    let presale = &mut ctx.accounts.presale;
-    require!(stage_iterator < (presale.stages.len() as u64), ErrorCodes::InvalidStageIterator);
-    presale.stage_iterator = stage_iterator;
+    let presale_info = &mut ctx.accounts.presale_info;
+    require!(stage_iterator < (presale_info.stages.len() as u64), ErrorCodes::InvalidStageIterator);
+    presale_info.stage_iterator = stage_iterator;
 
     Ok(())
 }
@@ -14,6 +14,6 @@ pub fn handler(ctx: Context<SetStage>, stage_iterator: u64) -> Result<()> {
 #[derive(Accounts)]
 pub struct SetStage<'info> {
     #[account(mut, has_one = authority)]
-    pub presale: Account<'info, Presale>,
+    pub presale_info: Account<'info, PresaleInfo>,
     pub authority: Signer<'info>,
 }
