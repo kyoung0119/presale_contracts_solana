@@ -50,9 +50,11 @@ describe("presale-contracts-solana", () => {
       // Add more stages as necessary
     ];
 
+    const protocol_wallet = admin.publicKey
+
     await program.methods
       .initialize(
-        admin.publicKey,
+        protocol_wallet,
         stages
       )
       .accounts({
@@ -112,32 +114,35 @@ describe("presale-contracts-solana", () => {
     assert.equal(presaleInfoAfter.stageIterator.toString(), updatedStageIndex.toString(), "Stage iterator should be updated");
   });
 
-  // it("Method: updateTotalSold", async function () {
-  //   const amount = new BN(200);
+  it("Method: updateTotalSold", async function () {
+    const presaleInfoBefore = await program.account.presaleInfo.fetch(presale_info.publicKey);
+    assert.equal(presaleInfoBefore.totalTokensSold.toString(), '0', "Initial Total tokens sold should be 0");
 
-  //   // First update
-  //   await program.methods
-  //     .updateTotalSold(amount)
-  //     .accounts({
-  //       presale: presale.publicKey,
-  //       authority: provider.wallet.publicKey,
-  //     })
-  //     .rpc();
+    const amount = new BN(200);
 
-  //   await waitSeconds(43200 + 1); // 12 hours + 1 second
+    // First update
+    await program.methods
+      .updateTotalSold(amount)
+      .accounts({
+        presaleInfo: presale_info.publicKey,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc();
 
-  //   // Second update
-  //   await program.methods
-  //     .updateTotalSold(amount)
-  //     .accounts({
-  //       presale: presale.publicKey,
-  //       authority: provider.wallet.publicKey,
-  //     })
-  //     .rpc();
+    await waitSeconds(12 + 1); // 12 hours + 1 second
 
-  //   const account = await program.account.presale.fetch(presale.publicKey);
-  //   assert.equal(account.totalTokensSold.toString(), amount.toString(), "Total tokens sold should be updated");
-  // });
+    // Second update
+    await program.methods
+      .updateTotalSold(amount)
+      .accounts({
+        presaleInfo: presale_info.publicKey,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc();
+
+    const account = await program.account.presaleInfo.fetch(presale_info.publicKey);
+    assert.equal(account.totalTokensSold.toString(), amount.toString(), "Total tokens sold should be updated");
+  });
 
   // it("Method: depositUSDT", async function () {
   //   // Mint USDT token

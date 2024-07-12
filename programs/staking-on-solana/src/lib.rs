@@ -32,6 +32,10 @@ mod presale_contracts_solana {
         instructions::set_stage::handler(ctx, stage_iterator)
     }
 
+    pub fn update_total_sold(ctx: Context<UpdateTotalSold>, amount: u64) -> Result<()> {
+        instructions::update_total_sold::handler(ctx, amount)
+    }
+
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         instructions::deposit::handler(ctx, amount)
     }

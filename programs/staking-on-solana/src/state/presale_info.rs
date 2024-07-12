@@ -10,6 +10,7 @@ pub struct PresaleInfo {
     pub stage_iterator: u64,
     pub stages: [Stage; 10],
     pub update_protocol_wallet_timestamp: i64,
+    pub update_total_sold_timestamp: i64,
 }
 
-pub const PRESALE_INFO_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + (8 + 8) * 10 + 8;
+pub const PRESALE_INFO_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + (8 + 8) * 10 + 8 + 8;
