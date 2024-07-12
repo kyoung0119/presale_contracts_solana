@@ -4,6 +4,9 @@ use anchor_lang::prelude::*;
 // (old Anchor 0.18 added 300 for user error codes)
 #[error_code]
 pub enum ErrorCodes {
+    #[msg("Update Protocol Wallet: Delay in progress")]
+    UpdateProtocolWalletDelay,
+
     #[msg("Invalid stage iterator")]
     InvalidStageIterator,
 

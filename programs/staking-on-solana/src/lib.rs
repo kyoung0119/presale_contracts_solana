@@ -21,6 +21,13 @@ mod presale_contracts_solana {
         instructions::initialize::handler(ctx, protocol_wallet, stages)
     }
 
+    pub fn update_protocol_wallet(
+        ctx: Context<UpdateProtocolWallet>,
+        new_wallet: Pubkey
+    ) -> Result<()> {
+        instructions::update_protocol_wallet::handler(ctx, new_wallet)
+    }
+
     pub fn set_stage(ctx: Context<SetStage>, stage_iterator: u64) -> Result<()> {
         instructions::set_stage::handler(ctx, stage_iterator)
     }

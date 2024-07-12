@@ -9,6 +9,7 @@ pub struct Presale {
     pub total_sold_in_usd: u64,
     pub stage_iterator: u64,
     pub stages: [Stage; 10],
+    pub update_protocol_wallet_timestamp: i64,
 }
 
-pub const PRESALE_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + (8 + 8) * 10;
+pub const PRESALE_SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + (8 + 8) * 10 + 8;

@@ -48,7 +48,7 @@ describe("presale-contracts-solana", () => {
       // Add more stages as necessary
     ];
 
-    const tx = await program.methods
+    await program.methods
       .initialize(
         admin.publicKey,
         stages
@@ -63,6 +63,21 @@ describe("presale-contracts-solana", () => {
 
     const account = await program.account.presale.fetch(presale.publicKey);
     console.log('Presale Authority: ', account.authority.toString());
+  });
+
+  it('Updates the protocol wallet', async () => {
+    const newWallet = Keypair.generate().publicKey;
+
+    await program.methods
+      .updateProtocolWallet(newWallet)
+      .accounts({
+        presale: presale.publicKey,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc();
+
+    const account = await program.account.presale.fetch(presale.publicKey);
+    console.log('Protocol Wallet:', account.protocolWallet.toString());
   });
 
   it('Sets a stage', async () => {
