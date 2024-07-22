@@ -40,26 +40,14 @@ mod presale_contracts_solana {
     }
 
     pub fn deposit_usdt(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_usdt(ctx, amount, referrer)
-    }
-
-    pub fn deposit_usdt_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_usdt_to(ctx, amount, referrer)
+        instructions::deposit::deposit_usdt(ctx, amount)
     }
 
     pub fn deposit_usdc(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_usdc(ctx, amount, referrer)
+        instructions::deposit::deposit_usdc(ctx, amount)
     }
 
-    pub fn deposit_usdc_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_usdc_to(ctx, amount, referrer)
-    }
-
-    pub fn deposit_coin(ctx: Context<Deposit>, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_coin(ctx, referrer)
-    }
-
-    pub fn deposit_coin_to(ctx: Context<DepositTo>, referrer: Pubkey) -> Result<()> {
-        instructions::deposit::deposit_coin_to(ctx, referrer)
+    pub fn deposit_sol(ctx: Context<Deposit>, referrer: Pubkey, sol_price: u64) -> Result<()> {
+        instructions::deposit::deposit_sol(ctx, sol_price)
     }
 }

@@ -1,9 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "programs/*",
-    "amm-anchor",
-    "lib"
+    "programs/*"
 ]
 
 [profile.release]

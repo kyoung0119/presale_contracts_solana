@@ -30,14 +30,9 @@ pub struct DepositTo<'info> {
     pub token_program: Program<'info, token::Token>,
 }
 
-pub fn deposit_usdt(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
+pub fn deposit_usdt(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let presale = &mut ctx.accounts.presale;
-    let (charge_back, expected_amount) = deposit_checks_and_effects(
-        presale,
-        amount,
-        true,
-        *ctx.accounts.token_program.key
-    )?;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(presale, amount, true, 0)?;
 
     transfer_tokens(
         ctx.accounts.token_account.to_account_info(),
@@ -51,35 +46,9 @@ pub fn deposit_usdt(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Res
     Ok(())
 }
 
-pub fn deposit_usdt_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
+pub fn deposit_usdc(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let presale = &mut ctx.accounts.presale;
-    let (charge_back, expected_amount) = deposit_checks_and_effects(
-        presale,
-        amount,
-        true,
-        *ctx.accounts.token_program.key
-    )?;
-
-    transfer_tokens(
-        ctx.accounts.token_account.to_account_info(),
-        ctx.accounts.protocol_wallet.to_account_info(),
-        ctx.accounts.authority.to_account_info(),
-        ctx.accounts.token_program.to_account_info(),
-        amount
-    )?;
-
-    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
-    Ok(())
-}
-
-pub fn deposit_usdc(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Result<()> {
-    let presale = &mut ctx.accounts.presale;
-    let (charge_back, expected_amount) = deposit_checks_and_effects(
-        presale,
-        amount,
-        true,
-        *ctx.accounts.token_program.key
-    )?;
+    let (charge_back, expected_amount) = deposit_checks_and_effects(presale, amount, true, 0)?;
 
     transfer_tokens(
         ctx.accounts.token_account.to_account_info(),
@@ -93,57 +62,19 @@ pub fn deposit_usdc(ctx: Context<Deposit>, amount: u64, referrer: Pubkey) -> Res
     Ok(())
 }
 
-pub fn deposit_usdc_to(ctx: Context<DepositTo>, amount: u64, referrer: Pubkey) -> Result<()> {
-    let presale = &mut ctx.accounts.presale;
-    let (charge_back, expected_amount) = deposit_checks_and_effects(
-        presale,
-        amount,
-        true,
-        *ctx.accounts.token_program.key
-    )?;
-
-    transfer_tokens(
-        ctx.accounts.token_account.to_account_info(),
-        ctx.accounts.protocol_wallet.to_account_info(),
-        ctx.accounts.authority.to_account_info(),
-        ctx.accounts.token_program.to_account_info(),
-        amount
-    )?;
-
-    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
-    Ok(())
-}
-
-pub fn deposit_coin(ctx: Context<Deposit>, referrer: Pubkey) -> Result<()> {
+pub fn deposit_sol(ctx: Context<Deposit>, sol_price: u64) -> Result<()> {
     let presale = &mut ctx.accounts.presale;
     let amount = ctx.accounts.token_account.amount;
     let (charge_back, expected_amount) = deposit_checks_and_effects(
         presale,
         amount,
         false,
-        *ctx.accounts.token_program.key
+        sol_price
     )?;
 
     **ctx.accounts.authority.try_borrow_mut_lamports()? -= amount;
     // **ctx.accounts.protocol_wallet.try_borrow_mut_lamports()? += expected_amount;
 
     update_presale_state(presale, expected_amount, charge_back, ctx.accounts.authority.key());
-    Ok(())
-}
-
-pub fn deposit_coin_to(ctx: Context<DepositTo>, referrer: Pubkey) -> Result<()> {
-    let presale = &mut ctx.accounts.presale;
-    let amount = ctx.accounts.token_account.amount;
-    let (charge_back, expected_amount) = deposit_checks_and_effects(
-        presale,
-        amount,
-        false,
-        *ctx.accounts.token_program.key
-    )?;
-
-    **ctx.accounts.authority.try_borrow_mut_lamports()? -= amount;
-    // **ctx.accounts.protocol_wallet.try_borrow_mut_lamports()? += expected_amount;
-
-    update_presale_state(presale, expected_amount, charge_back, ctx.accounts.to.key());
     Ok(())
 }
