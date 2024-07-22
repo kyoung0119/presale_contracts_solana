@@ -5,30 +5,25 @@ use crate::state::*;
 pub fn handler(
     ctx: Context<Initialize>,
     protocol_wallet: Pubkey,
-    stages: Vec<Stage>,
-    usdt_mint: Pubkey,
-    usdc_mint: Pubkey
+    ico_amount: u64,
+    token_per_sol: u64
 ) -> Result<()> {
-    let presale_info = &mut ctx.accounts.presale_info;
-    presale_info.authority = *ctx.accounts.authority.key;
-    presale_info.usdt_mint = usdt_mint;
-    presale_info.usdc_mint = usdc_mint;
-    presale_info.protocol_wallet = protocol_wallet;
-    presale_info.total_tokens_sold = 0;
-    presale_info.total_sold_in_usd = 0;
-    presale_info.stage_iterator = 0;
-
-    for (i, stage) in stages.iter().enumerate() {
-        presale_info.stages[i] = stage.clone();
-    }
+    let ico_info_pda = &mut ctx.accounts.ico_info_pda;
+    ico_info_pda.authority = *ctx.accounts.authority.key;
+    ico_info_pda.protocol_wallet = protocol_wallet;
+    ico_info_pda.ico_amount = ico_amount;
+    ico_info_pda.token_per_sol = token_per_sol;
+    ico_info_pda.ico_remaining = ico_amount;
+    ico_info_pda.total_sol = 0;
 
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(init, payer = authority, space = PRESALE_INFO_SIZE)]
-    pub presale_info: Account<'info, PresaleInfo>,
+    #[account(init, payer = authority, space = ICO_INFO_SIZE, seeds = [b"ICOInfo"], bump)]
+    pub ico_info_pda: Account<'info, ICOInfo>,
+
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,

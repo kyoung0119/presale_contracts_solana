@@ -1,15 +1,9 @@
 import {
   Keypair,
-  PublicKey,
-  Connection,
-  Transaction,
-  SystemProgram,
   LAMPORTS_PER_SOL,
-  SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
-  MintLayout,
   createMint,
 } from "@solana/spl-token";
 
@@ -70,11 +64,4 @@ export async function waitSeconds(seconds: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, seconds * 1000);
   });
-}
-
-function throwIfNull<T>(value: T | null, message = 'account not found'): T {
-  if (value === null) {
-    throw new Error(message)
-  }
-  return value
 }

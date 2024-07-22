@@ -5,21 +5,22 @@ use crate::state::*;
 use crate::error::*;
 
 pub fn deposit_checks_and_effects(
-    presale: &mut Account<PresaleInfo>,
+    presale: &mut Account<ICOInfo>,
     amount: u64,
     is_stable_token: bool,
     sol_price: u64
 ) -> Result<(u64, u64)> {
-    let stage_iterator = presale.stage_iterator as usize;
-    require!(
-        presale.stages[stage_iterator].token_amount >= amount,
-        ErrorCodes::InsufficientStageTokens
-    );
+    // let stage_iterator = presale.stage_iterator as usize;
+    // require!(
+    //     presale.stages[stage_iterator].token_amount >= amount,
+    //     ErrorCodes::InsufficientStageTokens
+    // );
 
-    let stage = &mut presale.stages[stage_iterator];
-    let coin_price = if is_stable_token { 1 } else { sol_price };
+    // let stage = &mut presale.stages[stage_iterator];
+    // let coin_price = if is_stable_token { 1 } else { sol_price };
 
-    let expected_amount = (coin_price * (amount as u64)) / (stage.token_price as u64);
+    // let expected_amount = (coin_price * (amount as u64)) / (stage.token_price as u64);
+    let expected_amount = 0; // Placeholder for actual charge back calculation
     let charge_back = 0; // Placeholder for actual charge back calculation
 
     Ok((charge_back as u64, expected_amount as u64))
@@ -42,17 +43,12 @@ pub fn transfer_tokens<'info>(
     token::transfer(cpi_ctx, amount)
 }
 
-pub fn update_presale_state(
-    presale: &mut Account<PresaleInfo>,
-    amount: u64,
-    price: u64,
-    user: Pubkey
-) {
-    let stage_iterator = presale.stage_iterator as usize;
-    let stage = &mut presale.stages[stage_iterator];
-    stage.token_amount -= amount;
-    presale.total_tokens_sold += amount;
-    presale.total_sold_in_usd += price * amount;
+pub fn update_presale_state(presale: &mut Account<ICOInfo>, amount: u64, price: u64, user: Pubkey) {
+    // let stage_iterator = presale.stage_iterator as usize;
+    // let stage = &mut presale.stages[stage_iterator];
+    // stage.token_amount -= amount;
+    // presale.total_tokens_sold += amount;
+    // presale.total_sold_in_usd += price * amount;
 
     // let balance = presale.balances.entry(user).or_insert(0);
     // *balance += amount;

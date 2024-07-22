@@ -4,18 +4,9 @@ use anchor_lang::prelude::*;
 use crate::state::*;
 
 pub fn handler(ctx: Context<UpdateProtocolWallet>, new_wallet: Pubkey) -> Result<()> {
-    let presale_info = &mut ctx.accounts.presale_info;
-    let current_time = Clock::get()?.unix_timestamp;
+    let ico_info_pda = &mut ctx.accounts.ico_info_pda;
 
-    if
-        presale_info.update_protocol_wallet_timestamp > 0 &&
-        presale_info.update_protocol_wallet_timestamp <= current_time
-    {
-        presale_info.protocol_wallet = new_wallet;
-        presale_info.update_protocol_wallet_timestamp = 0;
-    } else {
-        presale_info.update_protocol_wallet_timestamp = current_time + DEFAULT_DELAY_SECONDS;
-    }
+    ico_info_pda.protocol_wallet = new_wallet;
 
     Ok(())
 }
@@ -23,6 +14,6 @@ pub fn handler(ctx: Context<UpdateProtocolWallet>, new_wallet: Pubkey) -> Result
 #[derive(Accounts)]
 pub struct UpdateProtocolWallet<'info> {
     #[account(mut, has_one = authority)]
-    pub presale_info: Account<'info, PresaleInfo>,
+    pub ico_info_pda: Account<'info, ICOInfo>,
     pub authority: Signer<'info>,
 }
