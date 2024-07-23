@@ -6,6 +6,19 @@ import {
   TOKEN_PROGRAM_ID,
   createMint,
 } from "@solana/spl-token";
+import {
+  workspace,
+  AnchorProvider,
+  getProvider,
+  setProvider,
+  Wallet,
+  BN,
+  Provider,
+  Program,
+  Idl,
+  web3
+} from "@coral-xyz/anchor";
+import { provider, program } from './config';
 
 // Create a Random Wallet and airrop SOL
 export async function createRandomWalletAndAirdrop(provider, airdropAmount) {
@@ -64,4 +77,10 @@ export async function waitSeconds(seconds: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, seconds * 1000);
   });
+}
+
+export async function programPaidBy(payer: web3.Keypair): Promise<Program> {
+  const newProvider = new AnchorProvider(provider.connection, new Wallet(payer), {});
+
+  return new Program(program.idl as Idl, program.programId, newProvider)
 }

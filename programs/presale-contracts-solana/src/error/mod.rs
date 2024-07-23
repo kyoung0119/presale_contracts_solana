@@ -4,6 +4,12 @@ use anchor_lang::prelude::*;
 // (old Anchor 0.18 added 300 for user error codes)
 #[error_code]
 pub enum ErrorCodes {
+    #[msg("Invalid permission for this method")]
+    Unauthorized,
+
+    #[msg("Insufficient SOL for user deposit")]
+    InsufficientUserSOLAmount,
+
     #[msg("Update Protocol Wallet: Delay in progress")]
     UpdateProtocolWalletDelay,
 

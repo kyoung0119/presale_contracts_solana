@@ -29,7 +29,7 @@ mod presale_contracts_solana {
         instructions::update_protocol_wallet::handler(ctx, new_wallet)
     }
 
-    pub fn deposit_sol(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-        instructions::deposit::deposit_sol(ctx, amount)
+    pub fn deposit_sol(ctx: Context<Deposit>, sol_amount: u64) -> Result<()> {
+        instructions::deposit::deposit_sol(ctx, sol_amount)
     }
 }
