@@ -1,12 +1,12 @@
 [package]
-name = "presale-contracts-solana"
+name = "cre-ico-solana"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "presale_contracts_solana"
+name = "cre_ico_solana"
 
 [features]
 no-entrypoint = []

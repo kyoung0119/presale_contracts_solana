@@ -26,9 +26,7 @@ import { assert } from "chai";
 import { createRandomMint, createRandomWalletAndAirdrop, getRandomNumber, programPaidBy, waitSeconds } from "./utils";
 import { provider, program } from './config';
 
-
-
-describe("presale-contracts-solana", () => {
+describe("cre-ico-solana", () => {
   // Configure the client to use the local cluster.
   setProvider(provider);
 

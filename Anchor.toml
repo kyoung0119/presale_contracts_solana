@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-presale_contracts_solana = "9X5si3xhU4nFVh7FkGaC3n251xoN5JBoys9AEnrfkzxh"
+cre_ico_solana = "9X5si3xhU4nFVh7FkGaC3n251xoN5JBoys9AEnrfkzxh"
 
 [programs.localnet]
-presale_contracts_solana = "9X5si3xhU4nFVh7FkGaC3n251xoN5JBoys9AEnrfkzxh"
+cre_ico_solana = "9X5si3xhU4nFVh7FkGaC3n251xoN5JBoys9AEnrfkzxh"
 
 [registry]
 url = "https://api.apr.dev"
