@@ -7,6 +7,12 @@ pub enum ErrorCodes {
     #[msg("Invalid permission for this method")]
     Unauthorized,
 
+    #[msg("Insufficient USDT for user deposit")]
+    InsufficientUserUSDTAmount,
+
+    #[msg("Insufficient USDC for user deposit")]
+    InsufficientUserUSDCAmount,
+
     #[msg("Insufficient SOL for user deposit")]
     InsufficientUserSOLAmount,
 

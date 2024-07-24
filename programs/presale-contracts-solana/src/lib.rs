@@ -15,21 +15,25 @@ mod presale_contracts_solana {
 
     pub fn initialize(
         ctx: Context<Initialize>,
-        protocol_wallet: Pubkey,
         ico_amount: u64,
-        token_per_sol: u64
+        token_per_usd: u64,
+        bump: u8
     ) -> Result<()> {
-        instructions::initialize::handler(ctx, protocol_wallet, ico_amount, token_per_sol)
+        instructions::initialize::handler(ctx, ico_amount, token_per_usd, bump)
     }
 
-    pub fn update_protocol_wallet(
-        ctx: Context<UpdateProtocolWallet>,
-        new_wallet: Pubkey
-    ) -> Result<()> {
-        instructions::update_protocol_wallet::handler(ctx, new_wallet)
-    }
+    // pub fn update_protocol_wallet(
+    //     ctx: Context<UpdateProtocolWallet>,
+    //     new_wallet: Pubkey
+    // ) -> Result<()> {
+    //     instructions::update_protocol_wallet::handler(ctx, new_wallet)
+    // }
 
     pub fn deposit_sol(ctx: Context<Deposit>, sol_amount: u64) -> Result<()> {
         instructions::deposit::deposit_sol(ctx, sol_amount)
+    }
+
+    pub fn deposit_usdt(ctx: Context<DepositUSDT>, usdt_amount: u64) -> Result<()> {
+        instructions::deposit_usdt::handler(ctx, usdt_amount)
     }
 }

@@ -9,7 +9,7 @@ pub fn handler(ctx: Context<UpdateProtocolWallet>, new_wallet: Pubkey) -> Result
     // Ensure the caller is the admin
     require_keys_eq!(ico_info.admin, ctx.accounts.admin.key(), ErrorCodes::Unauthorized);
 
-    ico_info.protocol_wallet = new_wallet;
+    // ico_info.protocol_wallet = new_wallet;
 
     Ok(())
 }
