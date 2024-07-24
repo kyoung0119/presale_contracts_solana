@@ -15,11 +15,12 @@ mod cre_ico_solana {
 
     pub fn initialize(
         ctx: Context<Initialize>,
+        ico_name: String,
         ico_amount: u64,
         token_per_usd: u64,
         bump: u8
     ) -> Result<()> {
-        instructions::initialize::handler(ctx, ico_amount, token_per_usd, bump)
+        instructions::initialize::handler(ctx, ico_name, ico_amount, token_per_usd, bump)
     }
 
     // pub fn update_protocol_wallet(

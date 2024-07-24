@@ -5,31 +5,33 @@ use crate::{ state::*, utils::transfer_tokens };
 
 pub fn handler(
     ctx: Context<Initialize>,
+    ico_name: String,
     ico_amount: u64,
     token_per_usd: u64,
     bump: u8
 ) -> Result<()> {
-    let ico_info_pda = &mut ctx.accounts.ico_info_pda;
-    let ico_state_pda = &mut ctx.accounts.ico_state_pda;
-    // let (authority, bump) = Pubkey::find_program_address(&[b"ICO-Authority"], ctx.program_id);
-    // ico_info_pda.admin = ctx.accounts.admin.key();
-    ico_info_pda.authority = ctx.accounts.authority.key();
-    // ico_info_pda.bump = bump;
-    // ico_info_pda.protocol_wallet = protocol_wallet;
-    // ico_info_pda.protocol_ico_token_pda = ico_info_pda.protocol_ico_token_pda.key();
-    ico_info_pda.total_ico_amount = ico_amount;
-    ico_info_pda.token_per_usd = token_per_usd;
+    let ico_info = &mut ctx.accounts.ico_info;
+    let ico_state = &mut ctx.accounts.ico_state;
 
-    ico_info_pda.ico_token_mint = ctx.accounts.ico_token_mint.key();
-    ico_info_pda.usdt_mint = ctx.accounts.usdt_mint.key();
-    ico_info_pda.usdc_mint = ctx.accounts.usdc_mint.key();
-    ico_info_pda.ico_token_mint_decimals = ctx.accounts.ico_token_mint.decimals;
-    ico_info_pda.bump = bump;
+    let name_bytes = ico_name.as_bytes();
+    let mut name_data = [b' '; 10];
+    name_data[..name_bytes.len()].copy_from_slice(name_bytes);
 
-    ico_state_pda.remaining_ico_amount = ico_amount;
-    ico_state_pda.total_sold_usd = 0;
-    ico_state_pda.total_usdt = 0;
-    ico_state_pda.total_usdc = 0;
+    ico_info.ico_name = name_data;
+    ico_info.authority = ctx.accounts.authority.key();
+    ico_info.total_ico_amount = ico_amount;
+    ico_info.token_per_usd = token_per_usd;
+
+    ico_info.ico_token_mint = ctx.accounts.ico_token_mint.key();
+    ico_info.usdt_mint = ctx.accounts.usdt_mint.key();
+    ico_info.usdc_mint = ctx.accounts.usdc_mint.key();
+    ico_info.ico_token_mint_decimals = ctx.accounts.ico_token_mint.decimals;
+    ico_info.bump = bump;
+
+    ico_state.remaining_ico_amount = ico_amount;
+    ico_state.total_sold_usd = 0;
+    ico_state.total_usdt = 0;
+    ico_state.total_usdc = 0;
 
     let _ = transfer_tokens(
         ctx.accounts.admin_ico_token_account.to_account_info(),
@@ -43,12 +45,13 @@ pub fn handler(
 }
 
 #[derive(Accounts)]
+#[instruction(ico_name: String, bump: u8)]
 pub struct Initialize<'info> {
-    #[account(init, payer = authority, space = ICOInfo::LEN, seeds = [b"test_ico"], bump)]
-    pub ico_info_pda: Box<Account<'info, ICOInfo>>,
+    #[account(init, payer = authority, space = ICOInfo::LEN, seeds = [ico_name.as_bytes()], bump)]
+    pub ico_info: Box<Account<'info, ICOInfo>>,
 
     #[account(init, payer = authority, space = ICOState::LEN, seeds = [b"ico_state"], bump)]
-    pub ico_state_pda: Box<Account<'info, ICOState>>,
+    pub ico_state: Box<Account<'info, ICOState>>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -60,7 +63,7 @@ pub struct Initialize<'info> {
         init,
         payer = authority,
         token::mint = ico_token_mint,
-        token::authority = ico_info_pda,
+        token::authority = ico_info,
         seeds = [b"protocol_ico_token"],
         bump
     )]
@@ -70,7 +73,7 @@ pub struct Initialize<'info> {
         init,
         payer = authority,
         token::mint = usdt_mint,
-        token::authority = ico_info_pda,
+        token::authority = ico_info,
         seeds = [b"protocol_usdt_pool"],
         bump
     )]

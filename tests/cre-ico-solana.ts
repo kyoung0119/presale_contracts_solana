@@ -116,7 +116,7 @@ describe("cre-ico-solana", () => {
   });
 
   // These are all variables the client will need to create in order to initialize the ICO pool
-  let icoName = "test_ico";
+  let icoName = "cre_ico";
 
   it('Initializes the ICO', async () => {
     console.log("---Initializes the presale---\n")
@@ -131,20 +131,15 @@ describe("cre-ico-solana", () => {
       program.programId
     );
 
-    const [ico_state_pda, ico_state_bump] = await PublicKey.findProgramAddressSync(
+    const [ico_state_pda] = await PublicKey.findProgramAddressSync(
       [Buffer.from("ico_state")],
       program.programId
     );
 
-    const [protocol_ico_token_pda, protocol_ico_token_bump] = await PublicKey.findProgramAddressSync(
+    const [protocol_ico_token_pda] = await PublicKey.findProgramAddressSync(
       [Buffer.from("protocol_ico_token")],
       program.programId
     );
-
-    // const [protocol_sol_pool_pda, protocol_sol_pool_bump] = await PublicKey.findProgramAddressSync(
-    //   [Buffer.from("protocol_sol_pool")],
-    //   program.programId
-    // );
 
     const [protocol_usdt_pool_pda] = await PublicKey.findProgramAddressSync(
       [Buffer.from("protocol_usdt_pool")],
@@ -153,13 +148,14 @@ describe("cre-ico-solana", () => {
 
     await program.methods
       .initialize(
+        icoName,
         protocol_ico_amount_lamports,
         token_per_usd,
         ico_info_bump
       )
       .accounts({
-        icoInfoPda: ico_info_pda,
-        icoStatePda: ico_state_pda,
+        icoInfo: ico_info_pda,
+        icoState: ico_state_pda,
         authority: admin.publicKey,
         adminIcoTokenAccount: admin_ico_token_account.address,
         protocolIcoTokenPda: protocol_ico_token_pda,
@@ -220,8 +216,8 @@ describe("cre-ico-solana", () => {
     await program.methods
       .depositUsdt(depositUSDT)
       .accounts({
-        icoInfoPda: ico_info_pda,
-        icoStatePda: ico_state_pda,
+        icoInfo: ico_info_pda,
+        icoState: ico_state_pda,
         user: user1.publicKey,
         userUsdtTokenAccount: user_usdt_token_account.address,
         protocolUsdtPoolPda: protocol_usdt_pool_pda,
@@ -251,12 +247,12 @@ describe("cre-ico-solana", () => {
   //   const depositSOLAmount = new BN(1.5 * LAMPORTS_PER_SOL);
 
   //   // Fetch the PDA of ICO info account
-  //   const [ico_info_pda] = await PublicKey.findProgramAddressSync(
+  //   const [ico_info] = await PublicKey.findProgramAddressSync(
   //     [Buffer.from(icoName)],
   //     program.programId
   //   );
 
-  //   const [ico_state_pda, ico_state_bump] = await PublicKey.findProgramAddressSync(
+  //   const [ico_state, ico_state_bump] = await PublicKey.findProgramAddressSync(
   //     [Buffer.from("ico_state")],
   //     program.programId
   //   );
@@ -280,8 +276,8 @@ describe("cre-ico-solana", () => {
   //   await program.methods
   //     .depositSol(depositSOLAmount)
   //     .accounts({
-  //       icoInfoPda: ico_info_pda,
-  //       icoStatePda: ico_state_pda,
+  //       icoInfoPda: ico_info,
+  //       icoStatePda: ico_state,
   //       user: user1.publicKey,
   //       protocolSolPoolPda: protocol_sol_pool_pda,
   //       userIcoTokenAccount: user_ico_token_account.address,
@@ -296,7 +292,7 @@ describe("cre-ico-solana", () => {
   //   assert.equal(protocol_sol_pool_balance_info.toString(), "dsfsd", "SOL should be deposited to protocol SOL pool");
 
 
-  //   // const icoInfoPda = await program.account.icoInfo.fetch(ico_info_pda);
+  //   // const icoInfoPda = await program.account.icoInfo.fetch(ico_info);
   //   // assert.equal(icoInfoPda.totalSol.toString(), depositSOLAmount.toString(), "Balance should be updated");
   // });
 
@@ -304,7 +300,7 @@ describe("cre-ico-solana", () => {
   //   const newWallet = Keypair.generate().publicKey;
 
   //   // Fetch the PDA of ICO info account
-  //   const [ico_info_pda] = await PublicKey.findProgramAddressSync(
+  //   const [ico_info] = await PublicKey.findProgramAddressSync(
   //     [Buffer.from("ICO-Info")],
   //     program.programId
   //   );
@@ -319,13 +315,13 @@ describe("cre-ico-solana", () => {
   //   await program.methods
   //     .updateProtocolWallet(newWallet)
   //     .accounts({
-  //       icoInfoPda: ico_info_pda,
+  //       icoInfoPda: ico_info,
   //       admin: admin.publicKey,
   //       authority: authorityPda
   //     })
   //     .rpc();
 
-  //   const ico_info = await program.account.icoInfo.fetch(ico_info_pda);
+  //   const ico_info = await program.account.icoInfo.fetch(ico_info);
   //   assert.equal(ico_info.protocolWallet.toString(), newWallet.toString(), "Protocol wallet should be updated");
   // });
 });
