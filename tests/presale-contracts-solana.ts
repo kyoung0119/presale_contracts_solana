@@ -122,7 +122,6 @@ describe("presale-contracts-solana", () => {
 
   it('Initializes the ICO', async () => {
     console.log("---Initializes the presale---\n")
-    let bumps = new PoolBumps();
 
     const protocol_ico_amount = 15000
     const protocol_ico_amount_lamports = new BN(10 ** ico_token_mint_decimals * protocol_ico_amount)
@@ -187,7 +186,7 @@ describe("presale-contracts-solana", () => {
     console.log('ICO Token Per SOL: ', ico_info.tokenPerUsd.toString());
     const ico_state = await program.account.icoState.fetch(ico_state_pda);
     console.log('ICO Remaining: ', ico_state.remainingIcoAmount.toString());
-    console.log('ICO Total SOL: ', ico_state.totalSol.toString());
+    console.log('ICO Total SOL: ', ico_state.totalSoldUsd.toString());
     console.log("\n");
   });
 
@@ -236,12 +235,18 @@ describe("presale-contracts-solana", () => {
       .signers([user1])
       .rpc();
 
-    const protocol_sol_pool_balance_info = await provider.connection.getBalance(protocol_sol_pool_pda)
-    assert.equal(protocol_sol_pool_balance_info.toString(), "dsfsd", "SOL should be deposited to protocol SOL pool");
+    const ico_info = await program.account.icoInfo.fetch(ico_info_pda);
 
+    const ico_state = await program.account.icoState.fetch(ico_state_pda);
+    console.log('ICO Remaining: ', ico_state.remainingIcoAmount.toString());
+    console.log('Total Sold Amount in USD: ', ico_state.totalSoldUsd.toString());
+    console.log('Total USDT in pool: ', ico_state.totalUsdt.toString());
+    console.log("\n");
+    const protocol_usdt_pool_balance_info = await provider.connection.getTokenAccountBalance(protocol_usdt_pool_pda)
+    assert.equal(protocol_usdt_pool_balance_info.value.amount.toString(), ico_state.totalUsdt.toString(), "USDT should have deposited to protocol usdt pool");
 
-    // const icoInfoPda = await program.account.icoInfo.fetch(ico_info_pda);
-    // assert.equal(icoInfoPda.totalSol.toString(), depositSOLAmount.toString(), "Balance should be updated");
+    const user_ico_token_balance_info = await provider.connection.getTokenAccountBalance(user_ico_token_account.address)
+    assert.equal(user_ico_token_balance_info.value.amount.toString(), (ico_info.totalIcoAmount.toNumber() - ico_state.remainingIcoAmount.toNumber()).toString(), "USDT should have deposited to protocol usdt pool");
   });
 
   // it("Method: depositSOL", async function () {
@@ -325,11 +330,4 @@ describe("presale-contracts-solana", () => {
   //   const ico_info = await program.account.icoInfo.fetch(ico_info_pda);
   //   assert.equal(ico_info.protocolWallet.toString(), newWallet.toString(), "Protocol wallet should be updated");
   // });
-
-  function PoolBumps() {
-    this.ico_info;
-    this.redeemableMint;
-    this.poolWatermelon;
-  }
-
 });

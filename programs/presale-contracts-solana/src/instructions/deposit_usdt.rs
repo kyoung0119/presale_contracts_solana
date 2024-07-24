@@ -60,7 +60,8 @@ pub fn handler(ctx: Context<DepositUSDT>, usdt_amount: u64) -> Result<()> {
     // update_presale_state(ico_info_pda, expected_amount, charge_back, ctx.accounts.authority.key());
     // Update ICO state
     ico_state_pda.remaining_ico_amount -= transfer_ico_amount as u64;
-    ico_state_pda.total_sol += usdt_amount;
+    ico_state_pda.total_sold_usd += usdt_amount;
+    ico_state_pda.total_usdt += usdt_amount;
 
     Ok(())
 }

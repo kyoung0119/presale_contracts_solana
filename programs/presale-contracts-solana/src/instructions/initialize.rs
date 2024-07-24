@@ -27,7 +27,9 @@ pub fn handler(
     ico_info_pda.bump = bump;
 
     ico_state_pda.remaining_ico_amount = ico_amount;
-    ico_state_pda.total_sol = 0;
+    ico_state_pda.total_sold_usd = 0;
+    ico_state_pda.total_usdt = 0;
+    ico_state_pda.total_usdc = 0;
 
     let _ = transfer_tokens(
         ctx.accounts.admin_ico_token_account.to_account_info(),
