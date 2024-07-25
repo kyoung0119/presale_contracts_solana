@@ -33,8 +33,7 @@ describe("cre-ico-solana", () => {
   // @ts-ignore
   let admin = getProvider().wallet;
 
-  // These are all of the variables we assume exist in the world already and
-  // are available to the client.
+  // These are all of the variables we assume exist in the world already and are available to the client.
 
   const ONE_USDT = 1000000
 
@@ -50,10 +49,7 @@ describe("cre-ico-solana", () => {
   before(async () => {
     protocol_wallet = await createRandomWalletAndAirdrop(provider, 2);
     user1 = await createRandomWalletAndAirdrop(provider, 2);
-    // user_program = programPaidBy(user1);
 
-    // Create mock ico token mint with random decimals and mint to admin wallet
-    // ico_token_mint_decimals = await getRandomNumber(0, 9);
     ico_token_mint_decimals = 9;
     ico_token_mint = await createRandomMint(provider, ico_token_mint_decimals);
 
@@ -243,85 +239,44 @@ describe("cre-ico-solana", () => {
     assert.equal(user_ico_token_balance_info.value.amount.toString(), (ico_info.totalIcoAmount.toNumber() - ico_state.remainingIcoAmount.toNumber()).toString(), "USDT should have deposited to protocol usdt pool");
   });
 
-  // it("Method: depositSOL", async function () {
-  //   const depositSOLAmount = new BN(1.5 * LAMPORTS_PER_SOL);
+  it("Method: withdrawUSDT", async function () {
+    const depositUSDT = new BN(1.5 * ONE_USDT);
 
-  //   // Fetch the PDA of ICO info account
-  //   const [ico_info] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from(icoName)],
-  //     program.programId
-  //   );
+    // Fetch the PDA of ICO info account
+    const [ico_info_pda] = await PublicKey.findProgramAddressSync(
+      [Buffer.from(icoName)],
+      program.programId
+    );
 
-  //   const [ico_state, ico_state_bump] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from("ico_state")],
-  //     program.programId
-  //   );
+    const [ico_state_pda] = await PublicKey.findProgramAddressSync(
+      [Buffer.from("ico_state")],
+      program.programId
+    );
 
-  //   // const protocol_ico_account_info = await provider.connection.getTokenAccountBalance(protocol_ico_token_account.address)
-  //   // console.log('protocol ico account balance', protocol_ico_account_info.value.amount)
+    const admin_usdt_token_account = await getOrCreateAssociatedTokenAccount(provider.connection, admin.payer, usdt_mint, admin.publicKey);
 
-  //   const [protocol_sol_pool_pda, protocol_sol_pool_bump] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from("protocol_sol_pool")],
-  //     program.programId
-  //   );
+    const [protocol_usdt_pool_pda] = await PublicKey.findProgramAddressSync(
+      [Buffer.from("protocol_usdt_pool")],
+      program.programId
+    );
 
-  //   // create ICO token account for user wallet
-  //   const user_ico_token_account = await getOrCreateAssociatedTokenAccount(provider.connection, admin.payer, ico_token_mint, user1.publicKey);
+    await program.methods
+      .withdrawUsdt()
+      .accounts({
+        icoInfo: ico_info_pda,
+        icoState: ico_state_pda,
+        authority: admin.publicKey,
+        adminUsdtTokenAccount: admin_usdt_token_account.address,
+        protocolUsdtPoolPda: protocol_usdt_pool_pda,
+        usdtMint: usdt_mint,
+        tokenProgram: TOKEN_PROGRAM_ID
+      })
+      .rpc();
 
-  //   const [protocol_ico_token_pda, protocol_ico_token_bump] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from("protocol_ico_token")],
-  //     program.programId
-  //   );
+    const ico_info = await program.account.icoInfo.fetch(ico_info_pda);
 
-  //   await program.methods
-  //     .depositSol(depositSOLAmount)
-  //     .accounts({
-  //       icoInfoPda: ico_info,
-  //       icoStatePda: ico_state,
-  //       user: user1.publicKey,
-  //       protocolSolPoolPda: protocol_sol_pool_pda,
-  //       userIcoTokenAccount: user_ico_token_account.address,
-  //       protocolIcoTokenPda: protocol_ico_token_pda,
-  //       systemProgram: SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID
-  //     })
-  //     .signers([user1])
-  //     .rpc();
-
-  //   const protocol_sol_pool_balance_info = await provider.connection.getBalance(protocol_sol_pool_pda)
-  //   assert.equal(protocol_sol_pool_balance_info.toString(), "dsfsd", "SOL should be deposited to protocol SOL pool");
-
-
-  //   // const icoInfoPda = await program.account.icoInfo.fetch(ico_info);
-  //   // assert.equal(icoInfoPda.totalSol.toString(), depositSOLAmount.toString(), "Balance should be updated");
-  // });
-
-  // it("Method: updateProtocolWallet", async function () {
-  //   const newWallet = Keypair.generate().publicKey;
-
-  //   // Fetch the PDA of ICO info account
-  //   const [ico_info] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from("ICO-Info")],
-  //     program.programId
-  //   );
-
-  //   // Derive PDA from program for authority
-  //   const [authorityPda, bump] = await PublicKey.findProgramAddressSync(
-  //     [Buffer.from("ICO-Authority")],
-  //     program.programId
-  //   );
-
-  //   // First update
-  //   await program.methods
-  //     .updateProtocolWallet(newWallet)
-  //     .accounts({
-  //       icoInfoPda: ico_info,
-  //       admin: admin.publicKey,
-  //       authority: authorityPda
-  //     })
-  //     .rpc();
-
-  //   const ico_info = await program.account.icoInfo.fetch(ico_info);
-  //   assert.equal(ico_info.protocolWallet.toString(), newWallet.toString(), "Protocol wallet should be updated");
-  // });
+    const ico_state = await program.account.icoState.fetch(ico_state_pda);
+    const admin_usdt_token_balance_info = await provider.connection.getTokenAccountBalance(admin_usdt_token_account.address)
+    assert.equal(admin_usdt_token_balance_info.value.amount.toString(), ico_state.totalUsdt.toString(), "USDT should be withdrawn to admin wallet");
+  });
 });

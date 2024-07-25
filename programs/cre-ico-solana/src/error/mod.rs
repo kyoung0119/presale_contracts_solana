@@ -15,13 +15,4 @@ pub enum ErrorCodes {
 
     #[msg("Insufficient SOL for user deposit")]
     InsufficientUserSOLAmount,
-
-    #[msg("Update Protocol Wallet: Delay in progress")]
-    UpdateProtocolWalletDelay,
-
-    #[msg("Invalid stage iterator")]
-    InvalidStageIterator,
-
-    #[msg("Insufficient tokens in stage")]
-    InsufficientStageTokens,
 }

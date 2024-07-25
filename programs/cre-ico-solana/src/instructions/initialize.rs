@@ -56,7 +56,11 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = admin_ico_token_account.owner == authority.key(),
+        constraint = admin_ico_token_account.mint == ico_token_mint.key()
+    )]
     pub admin_ico_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
@@ -78,9 +82,6 @@ pub struct Initialize<'info> {
         bump
     )]
     pub protocol_usdt_pool_pda: Box<Account<'info, TokenAccount>>,
-    /// CHECK:
-    // #[account(init, payer = authority, seeds = [b"protocol_sol_pool"], bump, space = 8)]
-    // pub protocol_sol_pool_pda: AccountInfo<'info>,
 
     #[account(constraint = ico_token_mint.key() == admin_ico_token_account.mint)]
     pub ico_token_mint: Box<Account<'info, Mint>>,

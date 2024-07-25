@@ -4,13 +4,11 @@ use anchor_spl::token::{ self, TokenAccount, Transfer };
 use crate::error::ErrorCodes;
 use crate::state::*;
 use crate::utils::get_precision_factor;
-// use crate::utils::transfer_tokens;
 
 pub fn handler(ctx: Context<DepositUSDT>, usdt_amount: u64) -> Result<()> {
     let ico_info = &mut ctx.accounts.ico_info;
     let ico_state = &mut ctx.accounts.ico_state;
 
-    ////
     // Transfer USDT from user to protocol
     let user_balance = ctx.accounts.user_usdt_token_account.to_account_info().lamports();
     require!(user_balance > usdt_amount, ErrorCodes::InsufficientUserUSDTAmount);
@@ -24,25 +22,12 @@ pub fn handler(ctx: Context<DepositUSDT>, usdt_amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
     let _ = token::transfer(cpi_ctx, usdt_amount);
-    // //
 
     let transfer_ico_amount = usdt_amount * ico_info.token_per_usd * get_precision_factor(ico_info);
-
     msg!("transfer_ico_amount: {}", transfer_ico_amount);
 
-    // let amount = ctx.accounts.protocol_ico_token_account.amount;
-    // let (charge_back, expected_amount) = deposit_checks_and_effects(
-    //     ico_info,
-    //     amount,
-    //     false,
-    //     sol_price
-    // )?;
-
-    // **ctx.accounts.authority.try_borrow_mut_lamports()? -= amount;
-    // **ctx.accounts.protocol_wallet.try_borrow_mut_lamports()? += expected_amount;
-
     // Transfer ICO tokens from protocol to user
-    let ico_name = ico_info.ico_name;
+    // let ico_name = ico_info.ico_name;
     let bump = ico_info.bump;
     let seeds = &[b"cre_ico".as_ref(), &[bump]];
     let signer = &[&seeds[..]];
@@ -57,7 +42,6 @@ pub fn handler(ctx: Context<DepositUSDT>, usdt_amount: u64) -> Result<()> {
 
     let _ = token::transfer(cpi_ctx, transfer_ico_amount);
 
-    // update_presale_state(ico_info, expected_amount, charge_back, ctx.accounts.authority.key());
     // Update ICO state
     ico_state.remaining_ico_amount -= transfer_ico_amount as u64;
     ico_state.total_sold_usd += usdt_amount;
@@ -80,13 +64,12 @@ pub struct DepositUSDT<'info> {
     #[account(mut)]
     pub user_usdt_token_account: Account<'info, TokenAccount>,
 
-    /// CHECK:
     #[account(
         mut,
         seeds = [b"protocol_usdt_pool"],
         bump
     )]
-    pub protocol_usdt_pool_pda: AccountInfo<'info>,
+    pub protocol_usdt_pool_pda: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub user_ico_token_account: Account<'info, TokenAccount>,
